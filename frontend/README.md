@@ -1,73 +1,77 @@
-# React + TypeScript + Vite
+# Planit - Your AI Investment Guide 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<div align="center">
+  <img src="./assets/logo.jpg" alt="Planit Logo" width="500"/>
+</div>
 
-Currently, two official plugins are available:
+![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
+![Security](https://img.shields.io/badge/Security-OAuth2%20%7C%20JWT-red)
+![Stack](https://img.shields.io/badge/Full%20Stack-FastAPI%20%2B%20React-blue)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**Planit** is a next-generation financial planning platform designed to bridge the gap between static excel sheets and complex trading apps. It uses **Dynamic Goal-Based Logic** to keep users on track toward their life targets (Housing, Retirement, Education).
 
-## React Compiler
+Unlike traditional tools that focus on *market speculation*, Planit focuses on *behavioral consistency* and *algorithmic course correction*.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ⚡ Key Features
 
-## Expanding the ESLint configuration
+* **🎯 Goal-Centric Architecture:** Manage multiple financial silos with distinct time horizons and risk profiles.
+* **🧠 Dynamic Calibration Engine:** Real-time recalculation of required monthly contributions (PMT) based on portfolio performance.
+* **🛡️ Cyber-First Security:**
+    * Stateless Authentication using **JWT (JSON Web Tokens)**.
+    * **Argon2** hashing for password storage (industry gold standard).
+    * Input sanitization via **Pydantic** to prevent Injection attacks.
+* **📊 Data Visualization:** Interactive "Tunnel" charts powered by **Recharts** to visualize safe zones vs. critical drifts.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ Technology Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+We utilize a modern, scalable, and type-safe stack used by top-tier tech companies.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Backend (Python & Data)
+* **Core:** [FastAPI](https://fastapi.tiangolo.com/) (High-performance Async Framework)
+* **Data Processing:** `Pandas` & `NumPy` for financial modeling and simulations.
+* **Validation:** `Pydantic` for strict data schemas.
+* **Database:** PostgreSQL with SQLAlchemy ORM.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Frontend (Client)
+* **Framework:** React 18 + TypeScript (Strict Mode).
+* **Build Tool:** Vite (Next-gen frontend tooling).
+* **Styling:** Tailwind CSS for responsive, mobile-first design.
+* **State Management:** React Query (TanStack) + Context API.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### DevOps & Infrastructure
+* **Containerization:** Docker & Docker Compose.
+* **Version Control:** Git & GitHub Actions (CI/CD pipeline planned).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 Getting Started
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Prerequisites
+* Node.js (v18+)
+* Python (3.10+)
+* PostgreSQL (Local or Docker)
+
+### Installation
+
+1.  **Clone the repository**
+    ```bash
+    git clone [https://github.com/Matanelevavi/Planit.git](https://github.com/Matanelevavi/Planit.git)
+    cd Planit
+    ```
+
+2.  **Setup Backend**
+    ```bash
+    cd backend
+    python -m venv venv
+    source venv/bin/activate  # Windows: venv\Scripts\activate
+    pip install -r requirements.txt
+    uvicorn app.main:app --reload
+    ```
+
+3.  **Setup Frontend**
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+
+---
+*Developed by Matanel levavi - Full Stack, Data & Cyber Security Developer*
