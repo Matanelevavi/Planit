@@ -1,8 +1,9 @@
 # Planit - Your AI Investment Guide 🚀
 
 <div align="center">
-  <img src="./assets/logo.jpg" alt="Planit Logo" width="500"/>
+  <img src="./frontend/src/assets/logo.jpg" alt="Planit Logo" width="500"/>
 </div>
+
 
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
 ![Security](https://img.shields.io/badge/Security-OAuth2%20%7C%20JWT-red)
