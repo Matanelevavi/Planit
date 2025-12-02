@@ -1,7 +1,7 @@
 # Planit - Your AI Investment Guide 🚀
 
 <div align="center">
-  <img src="./frontend/src/assets/logo.png" alt="Planit Logo" width="500"/>
+  <img src="./frontend/src/assets/logo.png" alt="Planit Logo" width="120"/>
 </div>
 
 
