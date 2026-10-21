@@ -1,19 +1,21 @@
 {
   "name": "planit-mcp-server",
-  "version": "1.0.0",
-  "description": "MCP Server for Planit – AI Financial Planner (portfolio, VOO performance, tax events)",
+  "version": "2.0.0",
+  "description": "MCP server that lets AI assistants read and update a user's Planit goals",
   "type": "module",
   "main": "src/index.js",
+  "engines": { "node": ">=20" },
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
+    "test": "node --test",
     "inspect": "npx @modelcontextprotocol/inspector node src/index.js"
   },
-  "keywords": ["mcp", "planit", "finance", "voo", "portfolio"],
+  "keywords": ["mcp", "planit", "finance", "goals"],
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
-    "firebase-admin": "^13.4.0",
     "zod": "^3.25.67"
   }
 }
+

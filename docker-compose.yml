@@ -1,0 +1,43 @@
+# One command to run everything:   docker compose up --build
+# Then open http://localhost:8080
+#
+# Put your secrets in a .env file next to this one (see .env.example).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: planit
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: planit
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U planit"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      PLANIT_ENV: prod
+      PLANIT_SECRET_KEY: ${PLANIT_SECRET_KEY:?set PLANIT_SECRET_KEY in .env (32+ random chars)}
+      PLANIT_DATABASE_URL: postgresql+psycopg://planit:${POSTGRES_PASSWORD}@db:5432/planit
+      PLANIT_CORS_ORIGINS: ${PLANIT_CORS_ORIGINS:-["http://localhost:8080"]}
+      # Set to true once you serve over HTTPS (required by PLANIT_ENV=prod).
+      PLANIT_COOKIE_SECURE: ${PLANIT_COOKIE_SECURE:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:

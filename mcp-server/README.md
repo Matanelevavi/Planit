@@ -1,104 +1,55 @@
 # Planit MCP Server
 
-A local **Model Context Protocol (MCP)** server that exposes Planit's financial portfolio data as AI-readable tools.
+A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an AI assistant
+(Claude Desktop, Claude Code, Cursor, …) look at **your** Planit goals and help you plan.
+It is a thin layer over the Planit REST API – it holds no data of its own.
 
-## 📁 Location
+## Tools
 
-```
-Planit/
-├── backend/         ← Python / FastAPI backend
-├── frontend/        ← React / Vite frontend
-└── mcp-server/      ← This directory
-    ├── src/
-    │   ├── index.js               ← Server entry point
-    │   ├── mockData.js            ← Mock (or Firebase) data layer
-    │   └── tools/
-    │       ├── getPortfolioStatus.js
-    │       ├── compareVOOPerformance.js
-    │       └── calculateTaxEvents.js
-    ├── package.json
-    └── .gitignore
-```
+| Tool | Changes data? | What it does |
+|---|---|---|
+| `list_goals` | no | All goals with progress, status and suggested monthly deposit, plus a summary |
+| `get_goal_projection` | no | Expected month-by-month path with cautious/optimistic bands |
+| `simulate_what_if` | no | "What if I deposit X per month?" (optionally with another yearly return) |
+| `log_contribution` | **yes** | Records a deposit/withdrawal on a goal, dated today |
 
-## 🛠️ Tech Stack
+## Setup
 
-| Package | Purpose |
-|---|---|
-| `@modelcontextprotocol/sdk` | MCP server + Stdio transport |
-| `zod` | Input validation |
-| `firebase-admin` | (Future) Firebase data access |
-
-## 🚀 Quick Start
+Requires Node 20+ and a running Planit API.
 
 ```bash
 cd mcp-server
 npm install
-npm start
+npm test
 ```
 
-## 🔍 Test with MCP Inspector
-
-```bash
-cd mcp-server
-npm run inspect
-```
-
-This opens the browser-based MCP Inspector UI where you can call each tool manually.
-
-## 🧰 Registered Tools
-
-### `get_portfolio_status`
-Returns all current holdings (VOO, AAPL, MSFT, BND) with:
-- Current market value
-- Unrealised P&L (USD + %)
-- Portfolio-level summary
-
-**Input:** none
-
----
-
-### `compare_voo_performance`
-Compares VOO's performance over the last N months vs. the overall portfolio.
-
-**Input:**
-```json
-{ "months": 6 }
-```
-
----
-
-### `calculate_tax_events`
-Analyses all sell transactions and produces a capital-gains tax summary (Form 867 / Schedule D simulation).
-
-**Input:** none
-
-**Output includes:**
-- Short-term vs long-term capital gains breakdown
-- Per-transaction details
-- Estimated federal tax liability
-
-## 🔥 Connecting to Firebase (Future)
-
-1. Download your Firebase service account key from the Firebase Console.
-2. Save it as `mcp-server/serviceAccountKey.json` (already in `.gitignore`).
-3. Create a `.env` file:
-   ```env
-   GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json
-   FIREBASE_PROJECT_ID=your-planit-project-id
-   ```
-4. Uncomment the Firebase calls in `src/mockData.js`.
-
-## 📡 Connecting to an AI Model (Claude / Cursor / etc.)
-
-Add this to your MCP client config (e.g., `claude_desktop_config.json`):
+Add it to your MCP client (e.g. `claude_desktop_config.json`):
 
 ```json
 {
   "mcpServers": {
-    "planit-finance": {
+    "planit": {
       "command": "node",
-      "args": ["C:/Users/USER/OneDrive - Ariel University/שולחן העבודה/Planit/mcp-server/src/index.js"]
+      "args": ["/absolute/path/to/Planit/mcp-server/src/index.js"],
+      "env": {
+        "PLANIT_API_URL": "http://127.0.0.1:8000",
+        "PLANIT_EMAIL": "you@example.com",
+        "PLANIT_PASSWORD": "your-planit-password"
+      }
     }
   }
 }
 ```
+
+Try it interactively with `npm run inspect`.
+
+## Security notes
+
+- The server signs in as the account you configure and can do anything that account can do through
+  the tools above – nothing more. Use your own account only.
+- Credentials live in your MCP client's config file on your machine; keep that file private.
+- `log_contribution` is the only write. Assistants are told to call it only on an explicit request.
+- Output is logged to stderr only; stdout carries the protocol.
+
+> Version 2 replaced the earlier mock portfolio/tax tools (VOO comparison, US capital-gains
+> simulation). They used made-up data and US tax rules; they remain in git history if you want them back.
