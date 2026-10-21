@@ -1,17 +1,15 @@
-# Render Blueprint: one web service (API + web app) and a PostgreSQL database.
+# Render Blueprint: one web service (API + web app). The database is an external Postgres
+# (e.g. Neon or Supabase free tier) so it does not expire like Render's free database.
+#
 # Deploy: https://dashboard.render.com/blueprint/new?repo=https://github.com/Matanelevavi/Planit
-databases:
-  - name: planit-db
-    databaseName: planit
-    user: planit
-    plan: free # free databases expire after 30 days; choose a paid plan for real users
-
+# Render will ask for PLANIT_DATABASE_URL - paste the connection string from Neon/Supabase
+# (the postgres:// or postgresql:// form is fine; add ?sslmode=require if your provider needs it).
 services:
   - type: web
     name: planit
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: free
+    plan: free # sleeps after inactivity; use a paid plan for always-on
     healthCheckPath: /api/health
     envVars:
       - key: PLANIT_ENV
@@ -21,6 +19,4 @@ services:
       - key: PLANIT_SECRET_KEY
         generateValue: true
       - key: PLANIT_DATABASE_URL
-        fromDatabase:
-          name: planit-db
-          property: connectionString
+        sync: false # secret, prompted for on first deploy

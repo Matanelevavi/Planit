@@ -64,10 +64,20 @@ docker compose up --build       # -> http://localhost:8080
 Production mode (`PLANIT_ENV=prod`) refuses to start without a strong secret and `PLANIT_COOKIE_SECURE=true`,
 so put it behind HTTPS (a reverse proxy or your host's TLS). Interactive API docs are disabled in production.
 
+## Deploy a live site (Render + Neon)
+
+1. Create a free Postgres database at [Neon](https://neon.tech) (or Supabase) and copy its connection string.
+2. Open the [Render Blueprint](https://dashboard.render.com/blueprint/new?repo=https://github.com/Matanelevavi/Planit),
+   sign in with GitHub and paste the connection string when asked for `PLANIT_DATABASE_URL`.
+3. Apply. Render builds the root `Dockerfile` and serves the app (web UI at `/`, API at `/api`) over HTTPS.
+
+The free Render plan sleeps when idle; use a paid plan for an always-on site. The image also runs on any
+container host (Fly.io, Railway, AWS App Runner/ECS, …) with the same environment variables.
+
 ## Tests & quality
 
 ```bash
-cd backend      && pytest --cov=app && ruff check .     # 108 tests, ~98 % coverage
+cd backend      && pytest --cov=app && ruff check .     # 114 tests, ~99 % coverage
 cd frontend     && npm test && npm run lint && npm run build   # 57 tests
 cd mcp-server   && npm test                              # 10 tests
 ```
