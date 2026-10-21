@@ -17,10 +17,11 @@ class Base(DeclarativeBase):
 
 
 def make_engine(url: str) -> Engine:
-    kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {
-        "pool_pre_ping": True
-    }
-    return create_engine(url, **kwargs)
+    if url.startswith("sqlite"):
+        return create_engine(url, connect_args={"check_same_thread": False})
+    # prepare_threshold=None: no server-side prepared statements, so connection poolers in
+    # transaction mode (Neon/Supabase "-pooler" hosts, PgBouncer) work correctly.
+    return create_engine(url, pool_pre_ping=True, connect_args={"prepare_threshold": None})
 
 
 engine = make_engine(get_settings().database_url)

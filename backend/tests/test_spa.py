@@ -76,6 +76,14 @@ def test_missing_frontend_dir_is_a_startup_error(tmp_path, settings):
         main.create_app()
 
 
+def test_postgres_engine_disables_prepared_statements_for_poolers():
+    from app.db import make_engine
+
+    engine = make_engine("postgresql+psycopg://u:p@localhost/db?sslmode=require")  # lazy: no connection
+    assert engine.dialect.driver == "psycopg"
+    assert make_engine("sqlite://").dialect.name == "sqlite"
+
+
 def test_postgres_urls_are_normalised_to_psycopg3():
     from app.config import Settings
 
