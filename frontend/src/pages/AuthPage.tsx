@@ -23,9 +23,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     e.preventDefault()
     const found: typeof errors = {}
     if (!validateEmail(email)) found.email = 'invalidEmail'
-    if (isLogin ? !password : validateNewPassword(password)) {
-      found.password = isLogin ? 'required' : (validateNewPassword(password) ?? 'required')
-    }
+    const pwProblem = isLogin ? (password ? null : 'required') : validateNewPassword(password, email)
+    if (pwProblem) found.password = pwProblem
     setErrors(found)
     setFormError(null)
     if (Object.keys(found).length) return

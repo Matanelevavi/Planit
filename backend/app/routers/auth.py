@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
@@ -42,12 +43,12 @@ def _set_refresh_cookie(response: Response, user: User) -> None:
         httponly=True,  # not readable from JavaScript -> XSS can't steal it
         secure=s.cookie_secure,
         samesite="lax",
-        path="/auth",  # only sent to the auth endpoints
+        path=s.cookie_path,  # only sent to the auth endpoints
     )
 
 
 def _clear_refresh_cookie(response: Response) -> None:
-    response.delete_cookie(REFRESH_COOKIE, path="/auth")
+    response.delete_cookie(REFRESH_COOKIE, path=get_settings().cookie_path)
 
 
 def _token_response(response: Response, user: User) -> TokenOut:
@@ -58,8 +59,13 @@ def _token_response(response: Response, user: User) -> TokenOut:
 def _check_origin(request: Request) -> None:
     """CSRF defence in depth for cookie-authenticated endpoints: reject foreign Origins."""
     origin = request.headers.get("origin")
-    if origin is not None and origin not in get_settings().cors_origins:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Origin not allowed")
+    if origin is None or origin in get_settings().cors_origins:
+        return
+    # Same-origin deployments: the browser sets Origin and Host together, so a foreign page cannot
+    # produce a matching pair.
+    if urlparse(origin).netloc == request.headers.get("host"):
+        return
+    raise HTTPException(status.HTTP_403_FORBIDDEN, "Origin not allowed")
 
 
 @router.post(

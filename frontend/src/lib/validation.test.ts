@@ -74,5 +74,7 @@ describe('auth validation', () => {
     expect(validateNewPassword('onlyletterslong')).toBe('passwordTooWeak')
     expect(validateNewPassword('סיסמה-ארוכה-12')).toBeNull()
     expect(validateNewPassword('correct-horse-9')).toBeNull()
+    expect(validateNewPassword('Planit-Demo-Pass-2026', 'demo@example.com')).toBe('passwordSimilar')
+    expect(validateNewPassword('Planit-Demo-Pass-2026', 'bo@example.com')).toBeNull() // short names ignored
   })
 })

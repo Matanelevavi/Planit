@@ -83,8 +83,11 @@ export function validateEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())
 }
 
-export function validateNewPassword(pw: string): StringKey | null {
+export function validateNewPassword(pw: string, email = ''): StringKey | null {
   if (pw.length < 10) return 'passwordTooShort'
   if (/^\d+$/.test(pw) || /^\p{L}+$/u.test(pw)) return 'passwordTooWeak'
+  // mirrors the server rule: the part of the e-mail before "@" (if 4+ chars) must not appear in the password
+  const local = email.trim().toLowerCase().split('@')[0]
+  if (local.length >= 4 && pw.toLowerCase().includes(local)) return 'passwordSimilar'
   return null
 }

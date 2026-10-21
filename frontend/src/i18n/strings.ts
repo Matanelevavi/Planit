@@ -30,6 +30,7 @@ const en = {
   invalidEmail: 'Enter a valid e-mail address.',
   passwordTooShort: 'Password must be at least 10 characters.',
   passwordTooWeak: 'Password must mix letters with digits or symbols.',
+  passwordSimilar: 'Password must not contain your e-mail name.',
 
   // dashboard
   yourGoals: 'Your financial goals',
@@ -158,6 +159,7 @@ const he: Record<StringKey, string> = {
   invalidEmail: 'הזינו כתובת אימייל תקינה.',
   passwordTooShort: 'הסיסמה חייבת להכיל לפחות 10 תווים.',
   passwordTooWeak: 'הסיסמה חייבת לשלב אותיות עם ספרות או סימנים.',
+  passwordSimilar: 'הסיסמה לא יכולה להכיל את שם האימייל.',
 
   yourGoals: 'היעדים הפיננסיים שלך',
   dashboardSub: 'מגדירים יעדים, רושמים הפקדות ורואים אם אתם על המסלול.',

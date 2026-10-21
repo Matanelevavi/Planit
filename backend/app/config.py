@@ -2,7 +2,7 @@ import secrets
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,6 +23,20 @@ class Settings(BaseSettings):
     max_failed_logins: int = 5
     lockout_minutes: int = 15
     max_goals_per_user: int = 50
+    # Path the refresh cookie is scoped to. "/auth" standalone; "/api/auth" when the API is
+    # served under /api next to the web app (single-service deployment).
+    cookie_path: str = "/auth"
+    # Directory with the built frontend. When set, the app serves the SPA at "/" and the API at "/api".
+    frontend_dir: str = ""
+
+    @field_validator("database_url")
+    @classmethod
+    def _driver(cls, v: str) -> str:
+        # Hosting providers hand out postgres:// or postgresql:// URLs; we use the psycopg 3 driver.
+        for prefix in ("postgres://", "postgresql://"):
+            if v.startswith(prefix):
+                return "postgresql+psycopg://" + v[len(prefix):]
+        return v
 
     @model_validator(mode="after")
     def _check_secrets(self) -> "Settings":
