@@ -1,11 +1,11 @@
 name: Keep awake
 
 # Render's free plan puts a service to sleep after ~15 minutes without traffic.
-# This pings the health endpoint every 5 minutes so first visitors don't wait ~1 minute.
+# This pings the health endpoint every 10 minutes (off-peak minutes: GitHub skips runs scheduled on busy ones) so first visitors don't wait ~1 minute.
 # GitHub may delay scheduled runs under load, so this reduces sleeping rather than guaranteeing none.
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "3,13,23,33,43,53 * * * *"
   workflow_dispatch:
 
 permissions: {}
