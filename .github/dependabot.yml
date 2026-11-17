@@ -3,12 +3,30 @@ updates:
   - package-ecosystem: pip
     directory: /backend
     schedule: { interval: weekly }
+    groups:
+      python-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      # SQLAlchemy 2.1 ships compiled extensions that some locked-down Windows machines block;
+      # stay on 2.0.x until we deliberately migrate.
+      - dependency-name: sqlalchemy
+        versions: [">=2.1"]
   - package-ecosystem: npm
     directory: /frontend
     schedule: { interval: weekly }
+    groups:
+      frontend-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      # typescript-eslint does not support TypeScript 7 yet (lint fails).
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /mcp-server
     schedule: { interval: weekly }
+    groups:
+      mcp-minor-patch:
+        update-types: [minor, patch]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
