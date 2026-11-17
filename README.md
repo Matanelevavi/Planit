@@ -96,13 +96,23 @@ CI (GitHub Actions) runs all of the above plus dependency audits (`pip-audit`, `
 | `PLANIT_ACCESS_TOKEN_MINUTES` / `PLANIT_REFRESH_TOKEN_DAYS` | 15 / 14 | token lifetimes |
 | `PLANIT_MAX_FAILED_LOGINS` / `PLANIT_LOCKOUT_MINUTES` | 5 / 15 | brute-force lock-out |
 
+## Database migrations
+
+The schema is managed with Alembic (`backend/app/migrations`) and applied automatically on startup. Databases created before
+migrations existed are adopted (stamped) without touching data. To change the schema:
+
+```bash
+cd backend
+# edit app/models.py, then write a new file in app/migrations/versions/ (see 0001_initial.py)
+pytest tests/test_migrations.py   # fails if models and migrations drift apart
+```
+
 ## Security
 
 See [SECURITY.md](SECURITY.md) for the threat model, what is implemented, and known limitations.
 
 ## Known limitations / roadmap
 
-- Database schema is created automatically; add **Alembic** migrations before changing models in production.
 - Rate limiting is in-memory (per process). Behind several replicas, add a gateway or Redis-backed limiter.
 - No e-mail verification or password-reset flow yet (needs an e-mail provider).
 - Planit is a *planning tool*. Projections are estimates from the return you enter; it gives no investment, tax or legal advice.

@@ -11,6 +11,7 @@ from starlette.staticfiles import StaticFiles
 
 from app import db as database
 from app.config import get_settings
+from app.migrate import run_migrations
 from app.routers import auth, goals
 
 log = logging.getLogger("planit")
@@ -26,8 +27,7 @@ SPA_CSP = (
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    # Dev convenience. Production schema changes should move to Alembic migrations.
-    database.Base.metadata.create_all(database.engine)
+    run_migrations(database.engine)  # creates/updates the schema; adopts pre-Alembic databases
     yield
 
 
