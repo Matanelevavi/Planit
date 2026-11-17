@@ -43,6 +43,14 @@ export function Layout() {
       </main>
       <footer className="border-t border-slate-800 px-4 py-6 text-center text-xs text-slate-500">
         <p className="mx-auto max-w-2xl">{t('disclaimer')}</p>
+        <p className="mt-2 flex justify-center gap-4">
+          <Link to="/terms" className="underline hover:text-slate-300">
+            {t('termsOfUse')}
+          </Link>
+          <Link to="/privacy" className="underline hover:text-slate-300">
+            {t('privacyPolicy')}
+          </Link>
+        </p>
       </footer>
     </div>
   )

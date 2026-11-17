@@ -1,3 +1,4 @@
+import os
 import secrets
 from functools import lru_cache
 from typing import Literal
@@ -28,6 +29,20 @@ class Settings(BaseSettings):
     cookie_path: str = "/auth"
     # Directory with the built frontend. When set, the app serves the SPA at "/" and the API at "/api".
     frontend_dir: str = ""
+    # Password-reset e-mails (via Resend, https://resend.com). Without a key the feature is off.
+    resend_api_key: str = ""
+    mail_from: str = "Planit <onboarding@resend.dev>"
+    # Public base URL used in e-mail links, e.g. https://planit.example.com
+    # (falls back to Render's RENDER_EXTERNAL_URL).
+    public_url: str = ""
+
+    @property
+    def password_reset_enabled(self) -> bool:
+        return bool(self.resend_api_key and self.base_url)
+
+    @property
+    def base_url(self) -> str:
+        return (self.public_url or os.environ.get("RENDER_EXTERNAL_URL", "")).rstrip("/")
 
     @field_validator("database_url")
     @classmethod

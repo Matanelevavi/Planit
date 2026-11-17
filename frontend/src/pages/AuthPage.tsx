@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { Lock, Mail } from 'lucide-react'
-import { errorKey } from '../api/client'
+import { useQuery } from '@tanstack/react-query'
+import { api, errorKey } from '../api/client'
 import { useAuth } from '../auth/context'
 import { Field } from '../components/Field'
 import { useI18n } from '../i18n/context'
@@ -18,6 +19,13 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [formError, setFormError] = useState<StringKey | null>(null)
   const [busy, setBusy] = useState(false)
   const isLogin = mode === 'login'
+  // Only offer "forgot password" when the server can actually send the e-mail.
+  const authConfig = useQuery({
+    queryKey: ['auth-config'],
+    queryFn: async () => (await api.get<{ password_reset_enabled: boolean }>('/auth/config')).data,
+    staleTime: 5 * 60_000,
+    enabled: isLogin,
+  })
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -67,6 +75,26 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
         <button type="submit" disabled={busy} className="btn-primary w-full">
           {busy ? t('loading') : isLogin ? t('login') : t('register')}
         </button>
+        {isLogin && authConfig.data?.password_reset_enabled && (
+          <p className="text-center text-sm">
+            <Link to="/forgot-password" className="text-indigo-400 hover:underline">
+              {t('forgotPassword')}
+            </Link>
+          </p>
+        )}
+        {!isLogin && (
+          <p className="text-center text-xs text-slate-500">
+            {t('agreePrefix')}
+            <Link to="/terms" className="underline hover:text-slate-300">
+              {t('termsOfUse')}
+            </Link>{' '}
+            {t('and')}
+            <Link to="/privacy" className="underline hover:text-slate-300">
+              {t('privacyPolicy')}
+            </Link>
+            .
+          </p>
+        )}
       </form>
       <p className="text-center text-sm text-slate-400">
         {isLogin ? t('noAccount') : t('haveAccount')}{' '}

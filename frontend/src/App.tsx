@@ -5,6 +5,9 @@ import { GuestOnly, RequireAuth } from './components/RouteGuards'
 import { useI18n } from './i18n/context'
 import { AuthPage } from './pages/AuthPage'
 import { Dashboard } from './pages/Dashboard'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
+import { LegalPage } from './pages/LegalPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { SettingsPage } from './pages/SettingsPage'
 
 // The detail page pulls in the charting library, so it is loaded on demand.
@@ -29,7 +32,11 @@ export default function App() {
         <Route element={<GuestOnly />}>
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/register" element={<AuthPage mode="register" />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
+        <Route path="/privacy" element={<LegalPage kind="privacy" />} />
+        <Route path="/terms" element={<LegalPage kind="terms" />} />
         <Route element={<RequireAuth />}>
           <Route path="/" element={<Dashboard />} />
           <Route

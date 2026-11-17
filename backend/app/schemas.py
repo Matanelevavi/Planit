@@ -74,6 +74,29 @@ class DeleteAccountIn(BaseModel):
     password: str = Field(max_length=128)
 
 
+class ForgotPasswordIn(BaseModel):
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def _lower(cls, v: str) -> str:
+        return v.strip().lower()
+
+
+class ResetPasswordIn(BaseModel):
+    token: str = Field(min_length=10, max_length=2000)
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def _pw(cls, v: str) -> str:
+        return _validate_password(v)
+
+
+class AuthConfigOut(BaseModel):
+    password_reset_enabled: bool
+
+
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"

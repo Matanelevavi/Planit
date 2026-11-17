@@ -20,3 +20,5 @@ services:
         generateValue: true
       - key: PLANIT_DATABASE_URL
         sync: false # secret, prompted for on first deploy
+      - key: PLANIT_RESEND_API_KEY
+        sync: false # optional: enables "forgot password" e-mails (Resend)

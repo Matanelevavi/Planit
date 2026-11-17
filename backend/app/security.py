@@ -1,3 +1,4 @@
+import hashlib
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Literal
@@ -8,7 +9,8 @@ from argon2.exceptions import InvalidHashError, VerificationError
 
 from app.config import get_settings
 
-TokenKind = Literal["access", "refresh"]
+TokenKind = Literal["access", "refresh", "reset"]
+RESET_TOKEN_MINUTES = 30
 ALGORITHM = "HS256"
 
 _hasher = PasswordHasher()
@@ -35,14 +37,23 @@ def password_needs_rehash(password_hash: str) -> bool:
     return _hasher.check_needs_rehash(password_hash)
 
 
-def create_token(user_id: int, token_version: int, kind: TokenKind) -> str:
+def password_fingerprint(password_hash: str) -> str:
+    """Short digest of the current password hash. A reset token embeds it, so the token stops
+    working as soon as the password changes (single use) without storing anything server-side."""
+    return hashlib.sha256(password_hash.encode()).hexdigest()[:16]
+
+
+def create_token(
+    user_id: int, token_version: int, kind: TokenKind, extra: dict | None = None
+) -> str:
     s = get_settings()
     now = datetime.now(UTC)
-    ttl = (
-        timedelta(minutes=s.access_token_minutes)
-        if kind == "access"
-        else timedelta(days=s.refresh_token_days)
-    )
+    if kind == "access":
+        ttl = timedelta(minutes=s.access_token_minutes)
+    elif kind == "reset":
+        ttl = timedelta(minutes=RESET_TOKEN_MINUTES)
+    else:
+        ttl = timedelta(days=s.refresh_token_days)
     claims = {
         "sub": str(user_id),
         "ver": token_version,
@@ -50,6 +61,7 @@ def create_token(user_id: int, token_version: int, kind: TokenKind) -> str:
         "iat": now,
         "exp": now + ttl,
         "jti": uuid.uuid4().hex,
+        **(extra or {}),
     }
     return jwt.encode(claims, s.secret_key, algorithm=ALGORITHM)
 

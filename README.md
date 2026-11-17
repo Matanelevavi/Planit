@@ -20,7 +20,7 @@ Hebrew (RTL) is the default UI language; English is one click away.
 - **Tunnel chart** – expected path with a cautious/optimistic band around it (Recharts).
 - **What-if** – try another monthly deposit and see the balance on the target date and when you would reach the goal.
 - **Deposit & withdrawal log** per goal; editing a balance is recorded as an adjustment, never silently overwritten.
-- **Accounts** – register, sign in, change password, sign out everywhere, export all your data (JSON), delete your account.
+- **Accounts** – register, sign in, change password, reset a forgotten password (when e-mail is configured), sign out everywhere, export all your data (JSON), delete your account.
 - **MCP server** – let an AI assistant read your goals, run what-ifs and (on request) log deposits. See [`mcp-server/`](mcp-server/README.md).
 
 ## Architecture
@@ -95,6 +95,9 @@ CI (GitHub Actions) runs all of the above plus dependency audits (`pip-audit`, `
 | `PLANIT_CORS_ORIGINS` | localhost:5173 | JSON list of allowed web origins |
 | `PLANIT_ACCESS_TOKEN_MINUTES` / `PLANIT_REFRESH_TOKEN_DAYS` | 15 / 14 | token lifetimes |
 | `PLANIT_MAX_FAILED_LOGINS` / `PLANIT_LOCKOUT_MINUTES` | 5 / 15 | brute-force lock-out |
+| `PLANIT_RESEND_API_KEY` | _(off)_ | enables "forgot password" e-mails via [Resend](https://resend.com) |
+| `PLANIT_MAIL_FROM` | `Planit <onboarding@resend.dev>` | sender address (use your verified domain in production) |
+| `PLANIT_PUBLIC_URL` | `RENDER_EXTERNAL_URL` | base URL used in e-mail links |
 
 ## Database migrations
 
@@ -114,7 +117,7 @@ See [SECURITY.md](SECURITY.md) for the threat model, what is implemented, and kn
 ## Known limitations / roadmap
 
 - Rate limiting is in-memory (per process). Behind several replicas, add a gateway or Redis-backed limiter.
-- No e-mail verification or password-reset flow yet (needs an e-mail provider).
+- Password reset is built but stays switched off until you set `PLANIT_RESEND_API_KEY`; e-mail verification is not implemented yet.
 - Planit is a *planning tool*. Projections are estimates from the return you enter; it gives no investment, tax or legal advice.
   Before a public launch have the privacy policy / terms reviewed (Israeli Privacy Protection Law, Amendment 13).
 - Ideas: recurring-deposit reminders, goal templates, shared goals, an in-app AI assistant built on the MCP tools.

@@ -2,19 +2,32 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Cookie,
+    Depends,
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.config import get_settings
 from app.deps import CurrentUser, DbDep, unauthorized
+from app.mail import send_email
 from app.models import Contribution, Goal, User
 from app.ratelimit import rate_limit
 from app.schemas import (
+    AuthConfigOut,
     ChangePasswordIn,
     DeleteAccountIn,
+    ForgotPasswordIn,
     LoginIn,
     RegisterIn,
+    ResetPasswordIn,
     TokenOut,
     UserOut,
 )
@@ -24,6 +37,7 @@ from app.security import (
     create_token,
     decode_token,
     hash_password,
+    password_fingerprint,
     password_needs_rehash,
     verify_password,
 )
@@ -178,6 +192,73 @@ def change_password(body: ChangePasswordIn, response: Response, user: CurrentUse
     user.token_version += 1  # every other session is signed out
     db.commit()
     return _token_response(response, user)
+
+
+@router.get("/config", response_model=AuthConfigOut)
+def auth_config() -> AuthConfigOut:
+    """Lets the web app know whether to offer "forgot password"."""
+    return AuthConfigOut(password_reset_enabled=get_settings().password_reset_enabled)
+
+
+def _send_reset_email(email: str, token: str) -> None:
+    link = f"{get_settings().base_url}/reset-password?token={token}"
+    send_email(
+        email,
+        "Planit – איפוס סיסמה / Password reset",
+        "שלום,\nקיבלנו בקשה לאיפוס הסיסמה שלך ב-Planit. הקישור תקף ל-30 דקות ופעם אחת:\n"
+        f"{link}\n\nאם לא ביקשת – אפשר להתעלם מהמייל, הסיסמה לא תשתנה.\n\n"
+        "Hello,\nWe received a request to reset your Planit password. "
+        f"This link works once and expires in 30 minutes:\n{link}\n\n"
+        "If you didn't ask for this, ignore this e-mail – your password stays the same.\n",
+    )
+
+
+@router.post(
+    "/forgot-password",
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(rate_limit("forgot-password", 5, 60))],
+)
+def forgot_password(body: ForgotPasswordIn, background: BackgroundTasks, db: DbDep) -> dict:
+    """Always answers the same way, so it can't be used to find out which e-mails are registered.
+    The e-mail is sent in the background so response time doesn't leak it either."""
+    if not get_settings().password_reset_enabled:
+        raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "Password reset is not available")
+    user = db.scalar(select(User).where(User.email == body.email))
+    if user is not None:
+        token = create_token(
+            user.id,
+            user.token_version,
+            "reset",
+            {"pw": password_fingerprint(user.password_hash)},
+        )
+        background.add_task(_send_reset_email, user.email, token)
+    return {"status": "accepted"}
+
+
+@router.post(
+    "/reset-password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(rate_limit("reset-password", 10, 60))],
+)
+def reset_password(body: ResetPasswordIn, response: Response, db: DbDep) -> None:
+    invalid = HTTPException(status.HTTP_400_BAD_REQUEST, "Reset link is invalid or has expired")
+    try:
+        claims = decode_token(body.token, "reset")
+        user = db.get(User, int(claims["sub"]))
+    except (InvalidToken, ValueError):
+        raise invalid from None
+    if (
+        user is None
+        or user.token_version != claims["ver"]
+        or claims.get("pw") != password_fingerprint(user.password_hash)  # already used
+    ):
+        raise invalid
+    user.password_hash = hash_password(body.new_password)
+    user.token_version += 1  # signs out every existing session
+    user.failed_logins = 0
+    user.locked_until = None
+    db.commit()
+    _clear_refresh_cookie(response)
 
 
 @router.delete(

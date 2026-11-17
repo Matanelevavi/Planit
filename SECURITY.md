@@ -16,6 +16,7 @@ Please open a private security advisory on GitHub (Security → Advisories) inst
 | Transport/headers | CORS allow-list with credentials, CSRF defence-in-depth (Origin check on cookie endpoints), `nosniff`, `X-Frame-Options: DENY`, strict CSP, `Cache-Control: no-store`, HSTS when secure, 1 MB body limit, docs disabled in prod |
 | Errors | Unhandled exceptions return a generic 500; details stay in server logs |
 | Frontend | No `dangerouslySetInnerHTML`; React escapes all user text; error messages are mapped to fixed strings (server text is never shown); token never in `localStorage`; nginx CSP `default-src 'self'` |
+| Password reset | Single-use signed link (30 min) bound to the current password hash, so it dies once used or when the password changes; identical 202 answer for known/unknown e-mails, e-mail sent in the background (no timing leak); resetting signs out all sessions and clears lock-outs |
 | Privacy | `GET /auth/export` (data portability) and `DELETE /auth/me` (erasure, with password confirmation) |
 | Supply chain | Pinned backend deps, lockfiles for Node, `pip-audit` + `npm audit` in CI, Dependabot, containers run as non-root |
 | Config safety | `PLANIT_ENV=prod` refuses to start without a 32+ char secret and secure cookies; `.env` is git-ignored |
@@ -24,6 +25,6 @@ Please open a private security advisory on GitHub (Security → Advisories) inst
 - Registration reveals whether an e-mail is already registered (409). Accepted for UX; mitigated by rate limiting.
 - Rate limiting is per process (in-memory); use a gateway/Redis limiter with multiple replicas.
 - Stateless refresh tokens: a stolen refresh cookie works until expiry, password change, or "sign out everywhere".
-- No MFA, e-mail verification or password reset yet.
+- No MFA or e-mail verification yet. Password reset needs PLANIT_RESEND_API_KEY.
 - Behind a reverse proxy, run uvicorn with `--proxy-headers` and trust only your proxy so client IPs are real (the Docker image does this).
 - The MCP server stores a Planit password in your MCP client's config; treat that file as a secret.
